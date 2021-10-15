@@ -21,6 +21,11 @@ Adafruit_DCMotor *rightMotor = AFMS.getMotor(2);
 Adafruit_DCMotor *leftMotor = AFMS.getMotor(3);
 // You can also make another motor on port M2
 //Adafruit_DCMotor *myOtherMotor = AFMS.getMotor(2);
+bool isRunning = false;
+bool leftTape = true;
+bool rightTape = true;
+int fullSpeed = 80;
+int halfSpeed = 60;
 
 void setup() {
   Serial.begin(115200);           // set up Serial library at 9600 bps
@@ -30,12 +35,13 @@ void setup() {
     while (1);
   }
 
+
   // Set the speed to start, from 0 (off) to 255 (max speed)
-  rightMotor->setSpeed(120);
+  rightMotor->setSpeed(fullSpeed);
   rightMotor->run(FORWARD);
   // turn on motor
   rightMotor->run(RELEASE);
-  leftMotor->setSpeed(120);
+  leftMotor->setSpeed(fullSpeed);
   leftMotor->run(FORWARD);
   // turn on motor
   leftMotor->run(RELEASE);
@@ -50,38 +56,40 @@ void loop() {
      Serial.println(returnMessage);
   }
 
+  leftTape = (analogRead(A0)<600);
+  rightTape = (analogRead(A1)<600);
+
+  if (isRunning){
+    rightMotor->run(FORWARD);
+    leftMotor->run(FORWARD);
+    if (leftTape){
+      leftMotor->setSpeed(halfSpeed);
+    } else {
+      leftMotor->setSpeed(fullSpeed);
+    }
+    if (rightTape){
+      rightMotor->setSpeed(halfSpeed);
+    } else {
+      rightMotor->setSpeed(fullSpeed);
+    }
+  } else {
+    rightMotor->run(RELEASE);
+    leftMotor->run(RELEASE);
+    
+  }
+
 }
 
 String reactToInput(String input){
-  if (input == "rightF"){
-    rightMotor->run(FORWARD);
-    return "rightF";
+  if (input == "stop"){
+    isRunning = false;
+    return "stopping";
   }
-  else if (input == "rightB"){
-    rightMotor->run(BACKWARD);
-    return "rightB";
+  else if (input == "go"){
+    isRunning = true;
+    return "going";
   }
-  else if (input == "rightS"){
-    rightMotor->run(RELEASE);
-    return "rightS";
+  else {
+    return "I'm confused";
   }
-  else if (input == "leftF"){
-    leftMotor->run(FORWARD);
-    return "leftF";
-  }
-  else if (input == "leftB"){
-    leftMotor->run(BACKWARD);
-    return "leftB";
-  }
-  else if (input == "leftS"){
-    leftMotor->run(RELEASE);
-    return "leftS";
-  }
-  else{
-    leftMotor->run(RELEASE);
-    rightMotor->run(RELEASE);
-    return "unknown input";
-  }
-
-  
 }
