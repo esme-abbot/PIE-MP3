@@ -24,8 +24,10 @@ Adafruit_DCMotor *leftMotor = AFMS.getMotor(3);
 bool isRunning = false;
 bool leftTape = true;
 bool rightTape = true;
-int fullSpeed = 80;
-int halfSpeed = 60;
+int fullSpeed = 30;
+int halfSpeed = 25;
+int sensorSplit = 400;
+int speedFactor = fullSpeed;
 
 void setup() {
   Serial.begin(115200);           // set up Serial library at 9600 bps
@@ -38,11 +40,11 @@ void setup() {
 
   // Set the speed to start, from 0 (off) to 255 (max speed)
   rightMotor->setSpeed(fullSpeed);
-  rightMotor->run(FORWARD);
+  rightMotor->run(BACKWARD);
   // turn on motor
   rightMotor->run(RELEASE);
   leftMotor->setSpeed(fullSpeed);
-  leftMotor->run(FORWARD);
+  leftMotor->run(BACKWARD);
   // turn on motor
   leftMotor->run(RELEASE);
 }
@@ -56,14 +58,15 @@ void loop() {
      Serial.println(returnMessage);
   }
 
-  leftTape = (analogRead(A0)<600);
-  rightTape = (analogRead(A1)<600);
+  leftTape = (analogRead(A1)>sensorSplit);
+  rightTape = (analogRead(A0)>sensorSplit);
 
   if (isRunning){
-    rightMotor->run(FORWARD);
-    leftMotor->run(FORWARD);
+    rightMotor->run(BACKWARD);
+    leftMotor->run(BACKWARD);
+    /*
     if (leftTape){
-      leftMotor->setSpeed(halfSpeed);
+      leftMotor->setSpeed(halfSpeed + leftTape);
     } else {
       leftMotor->setSpeed(fullSpeed);
     }
@@ -72,11 +75,17 @@ void loop() {
     } else {
       rightMotor->setSpeed(fullSpeed);
     }
+    */
   } else {
     rightMotor->run(RELEASE);
     leftMotor->run(RELEASE);
-    
+   
   }
+
+  leftMotor->setSpeed(fullSpeed + leftTape * speedFactor - rightTape * speedFactor);
+  rightMotor->setSpeed(fullSpeed - leftTape * speedFactor + rightTape * speedFactor);
+  //leftMotor->setSpeed(25);
+  //rightMotor->setSpeed(25);
 
 }
 
@@ -93,3 +102,4 @@ String reactToInput(String input){
     return "I'm confused";
   }
 }
+
