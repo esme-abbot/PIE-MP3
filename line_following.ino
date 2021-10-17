@@ -24,8 +24,9 @@ Adafruit_DCMotor *leftMotor = AFMS.getMotor(3);
 bool isRunning = false;
 bool leftTape = true;
 bool rightTape = true;
-int fullSpeed = 30;
-int halfSpeed = 25;
+bool centerTape = true;
+int fullSpeed = 35;
+int minSpeed = 35;
 int sensorSplit = 400;
 int speedFactor = fullSpeed;
 
@@ -60,32 +61,36 @@ void loop() {
 
   leftTape = (analogRead(A1)>sensorSplit);
   rightTape = (analogRead(A0)>sensorSplit);
+  centerTape = (analogRead(A2)>sensorSplit);
 
-  if (isRunning){
-    rightMotor->run(BACKWARD);
-    leftMotor->run(BACKWARD);
-    /*
-    if (leftTape){
-      leftMotor->setSpeed(halfSpeed + leftTape);
+  if (isRunning) {
+    if (centerTape) {
+      rightMotor->run(BACKWARD);
+      leftMotor->run(BACKWARD);
+      leftMotor->setSpeed(fullSpeed + leftTape * speedFactor - rightTape * speedFactor);
+      rightMotor->setSpeed(fullSpeed - leftTape * speedFactor + rightTape * speedFactor);
     } else {
-      leftMotor->setSpeed(fullSpeed);
+      leftMotor->setSpeed(minSpeed);
+      rightMotor->setSpeed(minSpeed);
+      if (leftTape) {
+        leftMotor->run(FORWARD);
+        rightMotor->run(BACKWARD);
+      } else if (rightTape) {
+        leftMotor->run(BACKWARD);
+        rightMotor->run(FORWARD);
+      } else {
+        leftMotor->run(FORWARD);
+        rightMotor->run(FORWARD);
+        delay(250 * 35 / minSpeed);
+      }
+
     }
-    if (rightTape){
-      rightMotor->setSpeed(halfSpeed);
-    } else {
-      rightMotor->setSpeed(fullSpeed);
-    }
-    */
   } else {
     rightMotor->run(RELEASE);
     leftMotor->run(RELEASE);
+    
    
   }
-
-  leftMotor->setSpeed(fullSpeed + leftTape * speedFactor - rightTape * speedFactor);
-  rightMotor->setSpeed(fullSpeed - leftTape * speedFactor + rightTape * speedFactor);
-  //leftMotor->setSpeed(25);
-  //rightMotor->setSpeed(25);
 
 }
 
@@ -98,8 +103,21 @@ String reactToInput(String input){
     isRunning = true;
     return "going";
   }
+  else if (input == "snail"){
+    fullSpeed = 35;
+    return "snail";
+  }
+  else if (input == "normal"){
+    fullSpeed = 50;
+    return "normal";
+  }  
+ else if (input == "extreme"){
+    fullSpeed = 70;
+    return "xtreme";
+  }
   else {
-    return "I'm confused";
+    fullSpeed = input.toInt();
+    Serial.print(fullSpeed);
+    return "Set Speed";
   }
 }
-
