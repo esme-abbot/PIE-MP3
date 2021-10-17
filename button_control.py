@@ -3,36 +3,60 @@ import serial
 import time
 
 
-arduino = serial.Serial('COM6', 115200, timeout=.1)
+arduino = serial.Serial('COM8', 115200, timeout=.1)
 
-def getData():
-	while True:
-		data = arduino.readline()
-		if data:
-			return(data.decode("utf-8"))
-def function(entry):
-    print(entry)
+# def getData():
+#  	while True:
+#          a = arduino.readline()
+#          if data:
+#              return(data.decode("utf-8"))
+# def function(entry):
+#     print(entry)
 
 def send_to_arduino(message):
-	arduino.write(message.encode())
-	print(getData())
+    if isinstance(message, int):
+        arduino.write(str(message).encode())
+        print("Sent Message: " + str(message))
+    else:
+        arduino.write(message.encode())
+        print("Sent Message: " + message)
+ 	# print(getData())
+    
+def read_slider(event):
+    val = speed_slider.get()
+    send_to_arduino(val)
+    
+    
 
 
 window = tk.Tk()
-greeting = tk.Label(text="Hello, Tkinter")
-greeting.pack()
 
-right_forward = tk.Button(window, text="right_forward", command= lambda: send_to_arduino("rightF"))
-right_forward.pack()
-right_backward = tk.Button(window, text="right_backward", command= lambda: send_to_arduino("rightB"))
-right_backward.pack()
-right_stop = tk.Button(window, text="right_stop", command= lambda: send_to_arduino("rightS"))
-right_stop.pack()
-left_forward = tk.Button(window, text="left_forward", command= lambda: send_to_arduino("leftF"))
-left_forward.pack()
-left_backward = tk.Button(window, text="left_backward", command= lambda: send_to_arduino("leftB"))
-left_backward.pack()
-left_stop = tk.Button(window, text="left_stop", command= lambda: send_to_arduino("leftS"))
-left_stop.pack()
+slider_label = tk.Label(window, text = "Set the Center Speed")
+slider_label.pack()
+speed_slider = tk.Scale(window, from_= 0, to = 100, orient='horizontal', length = 300, command = read_slider)
+speed_slider.pack()
+speed_slider.set(50)
+stop_button = tk.Button(window, text="Stop MO!", command = lambda: send_to_arduino("stop"))
+stop_button.pack()
+go_button = tk.Button(window, text="Go MO Go!", command = lambda: send_to_arduino("go"))
+go_button.pack()
+
+
+
+
+# right_forward = tk.Button(window, text="right_forward", command= lambda: send_to_arduino("rightF"))
+# right_forward.pack()
+# right_backward = tk.Button(window, text="right_backward", command= lambda: send_to_arduino("rightB"))
+# right_backward.pack()
+# right_stop = tk.Button(window, text="right_stop", command= lambda: send_to_arduino("rightS"))
+# right_stop.pack()
+# left_forward = tk.Button(window, text="left_forward", command= lambda: send_to_arduino("leftF"))
+# left_forward.pack()
+# left_backward = tk.Button(window, text="left_backward", command= lambda: send_to_arduino("leftB"))
+# left_backward.pack()
+# left_stop = tk.Button(window, text="left_stop", command= lambda: send_to_arduino("leftS"))
+# left_stop.pack()
+
+# speed = tk.
 
 window.mainloop()
