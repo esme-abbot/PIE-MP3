@@ -56,41 +56,65 @@ void loop() {
      String s = Serial.readStringUntil('\n');
      s.trim();
      String returnMessage = reactToInput(s);
-     Serial.println(returnMessage);
   }
 
   leftTape = (analogRead(A1)>sensorSplit);
   rightTape = (analogRead(A0)>sensorSplit);
   centerTape = (analogRead(A2)>sensorSplit);
+  Serial.print(millis());
+  Serial.print(",");
 
   if (isRunning) {
     if (centerTape) {
       rightMotor->run(BACKWARD);
       leftMotor->run(BACKWARD);
       leftMotor->setSpeed(fullSpeed + leftTape * speedFactor - rightTape * speedFactor);
+      Serial.print(fullSpeed + leftTape * speedFactor - rightTape * speedFactor);
+      Serial.print(",");
       rightMotor->setSpeed(fullSpeed - leftTape * speedFactor + rightTape * speedFactor);
+      Serial.print(fullSpeed - leftTape * speedFactor + rightTape * speedFactor);
+      Serial.print(",");      
     } else {
-      leftMotor->setSpeed(minSpeed);
-      rightMotor->setSpeed(minSpeed);
+      leftMotor->setSpeed(fullSpeed);
+      rightMotor->setSpeed(fullSpeed);
       if (leftTape) {
         leftMotor->run(FORWARD);
+        Serial.print(-1 * fullSpeed);
+        Serial.print(",");
         rightMotor->run(BACKWARD);
+        Serial.print(fullSpeed);
+        Serial.print(",");        
       } else if (rightTape) {
         leftMotor->run(BACKWARD);
+        Serial.print(fullSpeed);
+        Serial.print(",");         
         rightMotor->run(FORWARD);
+        Serial.print(-1 * fullSpeed);
+        Serial.print(",");        
       } else {
         leftMotor->run(FORWARD);
+        Serial.print(-1 * fullSpeed);
+        Serial.print(",");  
         rightMotor->run(FORWARD);
+        Serial.print(-1 * fullSpeed);
+        Serial.print(",");  
         delay(250 * 35 / minSpeed);
       }
 
     }
+
   } else {
     rightMotor->run(RELEASE);
     leftMotor->run(RELEASE);
+    Serial.print("0,0,");
     
-   
   }
+  Serial.print(analogRead(A1)); //left sensor
+  Serial.print(",");
+  Serial.print(analogRead(A2)); //middle sensor
+  Serial.print(",");
+  Serial.print(analogRead(A0)); //right sensor
+  Serial.println(",");    
 
 }
 
@@ -117,7 +141,6 @@ String reactToInput(String input){
   }
   else {
     fullSpeed = input.toInt();
-    Serial.print(fullSpeed);
     return "Set Speed";
   }
 }
